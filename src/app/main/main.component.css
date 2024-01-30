@@ -1,0 +1,45 @@
+form {
+  width: 100%;
+}
+.control-group {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.input-group {
+  font-size: small;
+  margin: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.input-group label {
+  min-width: 0;
+  height: 20px;
+  display: flex;
+  margin-right: 1rem;
+}
+.button-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+button {
+  display: flex;
+  margin-bottom: 2rem;
+}
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.image-container img {
+  width: 600px;
+}
+.class {
+  margin-bottom: 2rem;
+}
