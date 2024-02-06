@@ -74,6 +74,12 @@ export class SentinelService {
     );
   }
 
+  detectObjectsFromBing(img: string): Observable<Blob> {
+    const formData = this.constructFormData(img);
+
+    return this.http.post(`http://localhost:8080/api/v1/sentinel/od/bing`, formData, {responseType: 'blob'});
+  }
+
   sendScreenshot(img: string): Observable<Blob> {
     const formData = this.constructFormData(img);
 

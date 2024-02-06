@@ -103,6 +103,14 @@ export class MainComponent implements OnInit {
     this.captureService
       .getImage(this.document.getElementById('map')!, true)
       .subscribe((img) => {
+        this.mainStore.bingTreeDetection(img);
+      });
+  }
+
+  onBingObjectDetection() {
+    this.captureService
+      .getImage(this.document.getElementById('map')!, true)
+      .subscribe((img) => {
         this.mainStore.bingObjectDetection(img);
       });
   }
