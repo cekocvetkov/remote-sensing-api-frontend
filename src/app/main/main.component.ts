@@ -1,13 +1,21 @@
-import { CUSTOM_ELEMENTS_SCHEMA, Component, OnInit } from '@angular/core';
-import { MainState, MainStore } from './main.component.store';
+import {Component, Inject, OnInit, ViewChild} from '@angular/core';
+import { MainStore } from './main.component.store';
 import { provideComponentStore } from '@ngrx/component-store';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {NgxCaptureService} from "ngx-capture";
+import {DOCUMENT} from "@angular/common";
+
 export interface SentinelRequest {
   extent?: number[];
   dateFrom: Date;
   dateTo: Date;
   cloudCoverage: number;
 }
+
+export interface MapSource {
+  name: string
+}
+
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
@@ -15,9 +23,13 @@ export interface SentinelRequest {
   providers: [provideComponentStore(MainStore)],
 })
 export class MainComponent implements OnInit {
+  @ViewChild('screen', { static: true }) screen: any;
+
   sentinelForm: FormGroup = new FormGroup({});
   vm$ = this.mainStore.vm$;
-  constructor(private mainStore: MainStore, private formBuilder: FormBuilder) {}
+
+  constructor(private mainStore: MainStore, private formBuilder: FormBuilder, private captureService: NgxCaptureService, @Inject(DOCUMENT) private document: Document) {}
+
   ngOnInit(): void {
     this.sentinelForm = this.formBuilder.group({
       dateFrom: [
@@ -35,9 +47,6 @@ export class MainComponent implements OnInit {
     });
   }
 
-  // onLoadImage(itemId: string) {
-  //   this.mainStore.loadImage(itemId);
-  // }
   onDrawEnd(extent: number[]) {
     console.log('!!!!!');
     console.log(this.sentinelForm.value);
@@ -55,11 +64,7 @@ export class MainComponent implements OnInit {
       this.sentinelForm.markAllAsTouched();
     }
   }
-  onChange(ev: any) {
-    console.log(ev.target.value);
-  }
 
-  onSubmit() {}
   // Accessor methods for form controls
   get dateFrom(): Date {
     return this.sentinelForm.get('dateFrom')?.value;
@@ -78,15 +83,36 @@ export class MainComponent implements OnInit {
       cloudCoverage: this.cloudCoverage,
     });
   }
-  onObjectDetection() {
-    console.log('DETECTIOOON');
 
-    console.log(this.cloudCoverage);
-    console.log(this.mainStore);
+  onObjectDetection() {
     this.mainStore.objectDetection({
       dateFrom: this.dateFrom,
       dateTo: this.dateTo,
       cloudCoverage: this.cloudCoverage,
     });
   }
+
+  onChangeMapSource(mapSource: any) {
+    this.mainStore.mapSource({
+      name: mapSource.target.value
+    })
+  }
+
+  //TODO try dragging https://www.npmjs.com/package/ngx-capture
+  onTakeScreenshot() {
+    this.captureService
+      .getImage(this.document.getElementById('map')!, true)
+      .subscribe((img) => {
+        this.mainStore.bingObjectDetection(img);
+      });
+  }
+
+  onDownloadScreenShot() {
+    this.captureService
+      .getImage(this.document.getElementById('map')!, true)
+      .subscribe((img) => {
+        this.captureService.downloadImage(img);
+      });
+  }
+
 }

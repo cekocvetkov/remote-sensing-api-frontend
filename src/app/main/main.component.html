@@ -2,6 +2,7 @@
   [loading]="(vm$ | async)!.loading"
   [loadedImage]="(vm$ | async)!.selectedItem"
   [currentExtent]="(vm$ | async)!.currentExtent"
+  [mapSource]="(vm$ | async)!.mapSource"
   (drawEnd$)="onDrawEnd($event)"
 ></app-map>
 
@@ -47,6 +48,24 @@
     Object Detection
   </button>
 </div>
+
+<div class="button-wrapper">
+  <button
+    id = "ts"
+    (click)="onTakeScreenshot()">Take screenshot</button>
+</div>
+
+<div class="button-wrapper">
+  <button
+    id = "ds"
+    (click)="onDownloadScreenShot()">Download screenshot</button>
+</div>
+
+<label>Map source options:</label>
+<select (change)="onChangeMapSource($event)">
+  <option value="OSM">Open Street map</option>
+  <option value="Aerial">Bing Aerial Map</option>
+</select>
 
 <div class="image-container">
   <img [src]="(vm$ | async)!.objectDetectionImageUrl" alt="" />

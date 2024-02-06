@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -72,5 +72,30 @@ export class SentinelService {
       },
       { responseType: 'blob' }
     );
+  }
+
+  sendScreenshot(img: string): Observable<Blob> {
+    const formData = this.constructFormData(img);
+
+    return this.http.post(`http://localhost:8080/api/v1/sentinel/td`, formData, {responseType: 'blob'});
+  }
+
+  private constructFormData(img: string) {
+    img = img.replace('data:image/png;base64,', '');
+    // Decode base64 string to Blob
+    const byteCharacters = atob(img);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: 'image/png'});
+
+    // Create FormData and append the image
+    const file = new File([blob], 'image.png');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileName', 'image.png');
+    return formData;
   }
 }

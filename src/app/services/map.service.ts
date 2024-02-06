@@ -8,12 +8,13 @@ import {
   getBottomLeft,
 } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
+import BingMaps from 'ol/source/BingMaps.js';
 
 import { Geometry } from 'ol/geom';
 import Draw, { DrawEvent, createRegularPolygon } from 'ol/interaction/Draw';
 import VectorLayer from 'ol/layer/Vector';
 import { transformExtent } from 'ol/proj';
-import { GeoTIFF, OSM, sourcesFromTileGrid } from 'ol/source';
+import { GeoTIFF, OSM } from 'ol/source';
 import VectorSource from 'ol/source/Vector';
 import { Subject } from 'rxjs';
 import Map from 'ol/Map';
@@ -25,32 +26,20 @@ import TileLayer from 'ol/layer/WebGLTile.js';
 export class MapService {
   private drawEnd$$ = new Subject<number[]>();
   private map: Map;
-
+  private bing = new TileLayer({
+    source: new BingMaps({
+      key: 'Aka7WBWlT_uiKpqkCaYfCD97redC9OP0miLCvbYige0eH41SNyBiz2KgMDPAlqUE',
+      imagerySet: 'Aerial',
+    }),
+  });
+  private osm = new TileLayer({
+    source: new OSM(),
+  })
   geoTiffLayer: TileLayer = new TileLayer({});
 
   public drawEnd$ = this.drawEnd$$.asObservable();
   constructor() {
     this.map = this.createMap('map');
-  }
-
-  public setSourceUrl(image: string, extent: number[]) {
-    const source = new GeoTIFF({
-      sources: [
-        {
-          url: image,
-        },
-      ],
-    });
-    console.log(source);
-    console.log(extent);
-    const extentEPSG3857: number[] = transformExtent(
-      extent!,
-      'EPSG:4326',
-      'EPSG:3857'
-    );
-    console.log(extentEPSG3857);
-    this.geoTiffLayer.setExtent(extentEPSG3857);
-    this.geoTiffLayer.setSource(source);
   }
 
   public setSource(image: Blob | null, extent: number[]) {
@@ -75,6 +64,27 @@ export class MapService {
     console.log(extentEPSG3857);
     this.geoTiffLayer.setExtent(extentEPSG3857);
     this.geoTiffLayer.setSource(source);
+  }
+
+  public setMapSource(mapSource: string) {
+    const vectorLayer = new VectorLayer({
+      source: new VectorSource({ wrapX: false }),
+    });
+    let layers = [
+      this.resolve(mapSource),
+      this.geoTiffLayer,
+      vectorLayer,
+    ];
+    this.map.setLayers(layers);
+    this.map.render();
+  }
+
+  private resolve(mapSource: string) {
+    if (mapSource === 'Aerial') {
+      return this.bing;
+    } else {
+      return this.osm;
+    }
   }
 
   private createMap(targetElementId: string): Map {
@@ -115,18 +125,12 @@ export class MapService {
     var writer = new GeoJSON();
     writer.writeGeometry(feature.getGeometry()!);
 
-    var geoJsonStr = writer.writeFeatures([feature]);
-
-    // console.log(geoJsonStr);
-
     const extent: Extent = feature.getGeometry()?.getExtent()!;
     const extentEPSG4326: number[] = transformExtent(
       extent!,
       'EPSG:3857',
       'EPSG:4326'
     );
-    // console.log(`EPSG:4326 Extent: ${extentEPSG4326}`);
-    // console.log(extentEPSG4326);
 
     const extentCoords = [
       getTopLeft(extentEPSG4326),

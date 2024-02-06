@@ -9,9 +9,7 @@ import {
   withLatestFrom,
 } from 'rxjs';
 import { SentinelService } from '../services/sentinel.service';
-import { MapService } from '../services/map.service';
-import { SentinelRequest } from './main.component';
-
+import {MapSource, SentinelRequest} from './main.component';
 export interface STACItemPreview {
   id: string;
   thumbnailUrl: string;
@@ -26,6 +24,7 @@ export interface MainState {
   loading: boolean;
   objectDetectionImageUrl: string | null;
   error: string | null;
+  mapSource: string;
 }
 
 export const initialState: MainState = {
@@ -36,10 +35,12 @@ export const initialState: MainState = {
   loading: false,
   objectDetectionImageUrl: null,
   error: null,
+  mapSource: '',
 };
 
 @Injectable()
 export class MainStore extends ComponentStore<MainState> {
+
   constructor(private sentinelService: SentinelService) {
     super(initialState);
   }
@@ -50,9 +51,8 @@ export class MainStore extends ComponentStore<MainState> {
   private class$ = this.select((state) => state.class);
   private selectedItem$ = this.select((state) => state.selectedItem);
   private currentExtent$ = this.select((state) => state.currentExtent);
-  private objectDetectionImageUrl$ = this.select(
-    (state) => state.objectDetectionImageUrl
-  );
+  private objectDetectionImageUrl$ = this.select((state) => state.objectDetectionImageUrl);
+  private mapSource$ = this.select((state) => state.mapSource)
 
   public vm$ = this.select({
     loading: this.loading$,
@@ -62,6 +62,7 @@ export class MainStore extends ComponentStore<MainState> {
     selectedItem: this.selectedItem$,
     currentExtent: this.currentExtent$,
     objectDetectionImageUrl: this.objectDetectionImageUrl$,
+    mapSource: this.mapSource$,
   });
 
   private setLoading = this.updater((state, isLoading: boolean) => ({
@@ -82,25 +83,69 @@ export class MainStore extends ComponentStore<MainState> {
     error: errorMessage,
   }));
 
-  private setItems = this.updater((state, items: STACItemPreview[]) => ({
-    ...state,
-    loading: false,
-    items: items,
-  }));
   private setClass = this.updater((state, classNew: string) => ({
     ...state,
     loading: false,
     class: classNew,
   }));
+
   private setCurrentExtent = this.updater((state, extent: number[]) => ({
     ...state,
     currentExtent: extent,
   }));
+
   private setSelectedItem = this.updater((state, item: Blob) => ({
     ...state,
     loading: false,
     selectedItem: item,
-  }));
+  }))
+
+  private setMapSourceType = this.updater((state, sourceType: string) => ({
+    ...state,
+    loading: false,
+    mapSource: sourceType,
+  }))
+
+  readonly mapSource = this.effect(
+    (sourceType$: Observable<MapSource>) => {
+      return sourceType$.pipe(
+        tap((sourceType) => {
+          this.setMapSourceType(sourceType.name)
+        })
+      )
+    }
+  );
+
+  readonly bingObjectDetection = this.effect(
+    (base64: Observable<string>) => {
+      return base64.pipe(
+        tap((s) => console.log(s)),
+        tap(() => this.setLoading(true)),
+        switchMap(base64 => {
+          return this.sentinelService
+            .sendScreenshot(
+              base64
+            )
+            .pipe(
+              tap({
+                next: (image: Blob) => {
+                  const imageUrl = URL.createObjectURL(image);
+                  this.setObjectDetectionImageUrl(imageUrl);
+                  this.setLoading(false);
+                },
+                error: (e) => {
+                  this.setError(e);
+                },
+              }),
+              catchError((e) => {
+                return of(e);
+              })
+            );
+        })
+      );
+    }
+  )
+
   readonly objectDetection = this.effect(
     (sentinelRequest$: Observable<SentinelRequest>) => {
       console.log(sentinelRequest$);
@@ -140,6 +185,7 @@ export class MainStore extends ComponentStore<MainState> {
       );
     }
   );
+
   readonly classify = this.effect(
     (sentinelRequest$: Observable<SentinelRequest>) => {
       return sentinelRequest$.pipe(
@@ -172,6 +218,7 @@ export class MainStore extends ComponentStore<MainState> {
       );
     }
   );
+
   readonly loadImage = this.effect(
     (sentinelRequest$: Observable<SentinelRequest>) => {
       return sentinelRequest$.pipe(
@@ -199,20 +246,6 @@ export class MainStore extends ComponentStore<MainState> {
               })
             );
         })
-        // withLatestFrom(this.currentExtent$)
-        // tap(([_, currentExtent]) =>
-        //   console.log(`... and extent ${currentExtent}`)
-        // ),
-        // switchMap(([itemId, currentExtent]: [string, number[]]) => {
-        //   return this.sentinelService
-        //     .getSentinelGeoTiff(itemId, currentExtent)
-        //     .pipe(
-        //       tap({
-        //         next: (image: Blob) => this.setSelectedItem(image),
-        //         error: (e) => this.setError(e),
-        //       })
-        //     );
-        // })
       );
     }
   );
