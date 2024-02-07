@@ -4,6 +4,7 @@ import { provideComponentStore } from '@ngrx/component-store';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {NgxCaptureService} from "ngx-capture";
 import {DOCUMENT} from "@angular/common";
+import {tap} from "rxjs";
 
 export interface SentinelRequest {
   extent?: number[];
@@ -24,6 +25,7 @@ export interface MapSource {
 })
 export class MainComponent implements OnInit {
   @ViewChild('screen', { static: true }) screen: any;
+  img = '';
 
   sentinelForm: FormGroup = new FormGroup({});
   vm$ = this.mainStore.vm$;
@@ -101,7 +103,18 @@ export class MainComponent implements OnInit {
   //TODO try dragging https://www.npmjs.com/package/ngx-capture
   onTakeScreenshot() {
     this.captureService
-      .getImage(this.document.getElementById('map')!, true)
+      .getImage(this.document.getElementById('map')!, false, {
+        x: 100,
+        y: 0,
+        width: 600,
+        height: 600,
+      })
+      .pipe(
+        tap((img: string) => {
+          this.img = img;
+          console.log(img);
+        })
+      )
       .subscribe((img) => {
         this.mainStore.bingTreeDetection(img);
       });

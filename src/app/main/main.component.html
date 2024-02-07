@@ -8,8 +8,15 @@
 
 <!-- <div id="map" class="map" (click)="logCoordinates($event)"></div>
 <div *ngIf="loading" class="loading">LOADING...</div> -->
+<div class="button-wrapper">
+  <label>Map source options:</label>
+  <select (change)="onChangeMapSource($event)">
+    <option value="OSM">Open Street map</option>
+    <option value="Aerial">Bing Aerial Map</option>
+  </select>
+</div>
 
-<form [formGroup]="sentinelForm" class="control-group">
+<form *ngIf="(vm$ | async)!.mapSource!='Aerial'" [formGroup]="sentinelForm" class="control-group">
   <div class="input-group">
     <label for="dateFrom">Date From:</label>
     <input type="date" id="dateFrom" formControlName="dateFrom" />
@@ -60,18 +67,6 @@
     id = "od-bing"
     (click)="onBingObjectDetection()">Bing object detection</button>
 </div>
-
-<div class="button-wrapper">
-  <button
-    id = "ds"
-    (click)="onDownloadScreenShot()">Download screenshot</button>
-</div>
-
-<label>Map source options:</label>
-<select (change)="onChangeMapSource($event)">
-  <option value="OSM">Open Street map</option>
-  <option value="Aerial">Bing Aerial Map</option>
-</select>
 
 <div class="image-container">
   <img [src]="(vm$ | async)!.objectDetectionImageUrl" alt="" />
