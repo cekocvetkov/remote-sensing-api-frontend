@@ -19,6 +19,8 @@ import VectorSource from 'ol/source/Vector';
 import { Subject } from 'rxjs';
 import Map from 'ol/Map';
 import TileLayer from 'ol/layer/WebGLTile.js';
+import Static from 'ol/source/ImageStatic';
+import ImageLayer from 'ol/layer/Image.js';
 
 @Injectable({
   providedIn: 'root',
@@ -34,37 +36,61 @@ export class MapService {
   });
   private osm = new TileLayer({
     source: new OSM(),
-  })
+  });
   geoTiffLayer: TileLayer = new TileLayer({});
-
+  imageLayer: ImageLayer<Static> = new ImageLayer({});
   public drawEnd$ = this.drawEnd$$.asObservable();
   constructor() {
     this.map = this.createMap('map');
   }
-
   public setSource(image: Blob | null, extent: number[]) {
     console.log(`Set Source ${image} ${extent}`);
     if (image === null) {
       return;
     }
-    const source = new GeoTIFF({
-      sources: [
-        {
-          blob: image,
-        },
-      ],
-    });
-    console.log(source);
+
     console.log(extent);
     const extentEPSG3857: number[] = transformExtent(
       extent!,
       'EPSG:4326',
       'EPSG:3857'
     );
+    const imageUrl = URL.createObjectURL(image);
+    const source = new Static({
+      url: imageUrl,
+      projection: 'EPSG:3857',
+      imageExtent: extentEPSG3857,
+    });
     console.log(extentEPSG3857);
-    this.geoTiffLayer.setExtent(extentEPSG3857);
-    this.geoTiffLayer.setSource(source);
+    console.log(source);
+
+    // this.geoTiffLayer.setExtent(extentEPSG3857);
+    this.imageLayer.setExtent(extentEPSG3857);
+    this.imageLayer.setSource(source);
   }
+  // public setSource(image: Blob | null, extent: number[]) {
+  //   console.log(`Set Source ${image} ${extent}`);
+  //   if (image === null) {
+  //     return;
+  //   }
+  //   const source = new GeoTIFF({
+  //     sources: [
+  //       {
+  //         blob: image,
+  //       },
+  //     ],
+  //   });
+  //   console.log(source);
+  //   console.log(extent);
+  //   const extentEPSG3857: number[] = transformExtent(
+  //     extent!,
+  //     'EPSG:4326',
+  //     'EPSG:3857'
+  //   );
+  //   console.log(extentEPSG3857);
+  //   this.geoTiffLayer.setExtent(extentEPSG3857);
+  //   this.geoTiffLayer.setSource(source);
+  // }
 
   public setMapSource(mapSource: string) {
     const vectorLayer = new VectorLayer({
@@ -73,6 +99,7 @@ export class MapService {
     let layers = [
       this.resolve(mapSource),
       this.geoTiffLayer,
+      this.imageLayer,
       vectorLayer,
     ];
     this.map.setLayers(layers);
@@ -107,6 +134,7 @@ export class MapService {
           source: new OSM(),
         }),
         this.geoTiffLayer,
+        this.imageLayer,
         vectorLayer,
       ],
     });

@@ -1,0 +1,23 @@
+.quicklook-wrapper {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quicklook-product {
+  font-size: xx-small;
+  max-width: 50px;
+  margin: 2rem;
+  overflow-wrap: break-word;
+  cursor: pointer;
+}
+.quicklook-product:hover {
+  font-weight: 600;
+}
+
+.quicklook-product img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}

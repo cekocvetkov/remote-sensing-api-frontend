@@ -1,10 +1,10 @@
-import {Component, Inject, OnInit, ViewChild} from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { MainStore } from './main.component.store';
 import { provideComponentStore } from '@ngrx/component-store';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import {NgxCaptureService} from "ngx-capture";
-import {DOCUMENT} from "@angular/common";
-import {tap} from "rxjs";
+import { NgxCaptureService } from 'ngx-capture';
+import { DOCUMENT } from '@angular/common';
+import { tap } from 'rxjs';
 
 export interface SentinelRequest {
   extent?: number[];
@@ -14,7 +14,7 @@ export interface SentinelRequest {
 }
 
 export interface MapSource {
-  name: string
+  name: string;
 }
 
 @Component({
@@ -30,7 +30,12 @@ export class MainComponent implements OnInit {
   sentinelForm: FormGroup = new FormGroup({});
   vm$ = this.mainStore.vm$;
 
-  constructor(private mainStore: MainStore, private formBuilder: FormBuilder, private captureService: NgxCaptureService, @Inject(DOCUMENT) private document: Document) {}
+  constructor(
+    private mainStore: MainStore,
+    private formBuilder: FormBuilder,
+    private captureService: NgxCaptureService,
+    @Inject(DOCUMENT) private document: Document
+  ) {}
 
   ngOnInit(): void {
     this.sentinelForm = this.formBuilder.group({
@@ -50,8 +55,10 @@ export class MainComponent implements OnInit {
   }
 
   onDrawEnd(extent: number[]) {
-    console.log('!!!!!');
     console.log(this.sentinelForm.value);
+
+    console.log('@#!#±@#±');
+
     if (this.sentinelForm.valid) {
       // Handle the form submission logic here
       console.log('Form submitted:', this.sentinelForm.value);
@@ -96,8 +103,14 @@ export class MainComponent implements OnInit {
 
   onChangeMapSource(mapSource: any) {
     this.mainStore.mapSource({
-      name: mapSource.target.value
-    })
+      name: mapSource.target.value,
+    });
+  }
+  onChangeDataSource(dataSourceType: any) {
+    this.mainStore.dataSource(dataSourceType.target.value);
+  }
+  onDetection(detectionType: any) {
+    this.mainStore.detectionType(detectionType.target.value);
   }
 
   //TODO try dragging https://www.npmjs.com/package/ngx-capture
@@ -135,5 +148,10 @@ export class MainComponent implements OnInit {
         this.captureService.downloadImage(img);
       });
   }
-
+  loadImageSTAC(itemId: any) {
+    this.mainStore.loadImageSTAC(itemId);
+  }
+  onLoadImage(itemId: any) {
+    this.mainStore.loadImage(itemId);
+  }
 }

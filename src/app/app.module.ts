@@ -8,20 +8,26 @@ import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
 import { MapComponent } from './map/map.component';
 import { HttpClientModule } from '@angular/common/http';
-import { ImageCropperModule } from "ngx-image-cropper";
-import {NgxCaptureModule} from "ngx-capture";
+import { ImageCropperModule } from 'ngx-image-cropper';
+import { NgxCaptureModule } from 'ngx-capture';
+import { ItemsPreviewComponent } from './items-preview/items-preview.component';
 
 @NgModule({
-  declarations: [AppComponent, MainComponent, MapComponent],
-    imports: [
-        HttpClientModule,
-        BrowserModule,
-        AppRoutingModule,
-        FormsModule,
-        ReactiveFormsModule,
-        ImageCropperModule,
-        NgxCaptureModule
-    ],
+  declarations: [
+    AppComponent,
+    MainComponent,
+    MapComponent,
+    ItemsPreviewComponent,
+  ],
+  imports: [
+    HttpClientModule,
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ImageCropperModule,
+    NgxCaptureModule,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [],
   bootstrap: [AppComponent],

@@ -6,6 +6,14 @@
   (drawEnd$)="onDrawEnd($event)"
 ></app-map>
 
+<div class="button-wrapper">
+  <label>Data source options:</label>
+  <select (change)="onChangeDataSource($event)">
+    <option value="SentinelProcessingApi">Sentinel Processing API</option>
+    <option value="STAC">STAC</option>
+  </select>
+</div>
+
 <!-- <div id="map" class="map" (click)="logCoordinates($event)"></div>
 <div *ngIf="loading" class="loading">LOADING...</div> -->
 <div class="button-wrapper">
@@ -16,24 +24,42 @@
   </select>
 </div>
 
-<form *ngIf="(vm$ | async)!.mapSource!='Aerial'" [formGroup]="sentinelForm" class="control-group">
-  <div class="input-group">
-    <label for="dateFrom">Date From:</label>
-    <input type="date" id="dateFrom" formControlName="dateFrom" />
-  </div>
-
-  <div class="input-group">
-    <label for="dateTo">Date To:</label>
-    <input type="date" id="dateTo" formControlName="dateTo" />
-  </div>
-
-  <div class="input-group">
-    <label for="cloudCoverage">Cloud Coverage:</label>
-    <input type="number" id="cloudCoverage" formControlName="cloudCoverage" />
-  </div>
-</form>
-
 <div class="button-wrapper">
+  <label>Detection Algorithms</label>
+  <select (change)="onDetection($event)">
+    <option value="ObjectDetection">Object Detection</option>
+    <option value="TreeDetection">Tree Detection</option>
+  </select>
+</div>
+
+<div *ngIf="(vm$ | async)!.dataSource !== 'STAC'">
+  <form
+    *ngIf="(vm$ | async)!.mapSource != 'Aerial'"
+    [formGroup]="sentinelForm"
+    class="control-group"
+  >
+    <div class="input-group">
+      <label for="dateFrom">Date From:</label>
+      <input type="date" id="dateFrom" formControlName="dateFrom" />
+    </div>
+
+    <div class="input-group">
+      <label for="dateTo">Date To:</label>
+      <input type="date" id="dateTo" formControlName="dateTo" />
+    </div>
+
+    <div class="input-group">
+      <label for="cloudCoverage">Cloud Coverage:</label>
+      <input type="number" id="cloudCoverage" formControlName="cloudCoverage" />
+    </div>
+  </form>
+</div>
+<app-items-preview
+  [items]="(vm$ | async)!.items"
+  (loadImage)="loadImageSTAC($event)"
+></app-items-preview>
+
+<!-- <div class="button-wrapper">
   <button
     id="class"
     *ngIf="(vm$ | async)!.currentExtent.length > 0"
@@ -57,17 +83,15 @@
 </div>
 
 <div class="button-wrapper">
-  <button
-    id = "ts"
-    (click)="onTakeScreenshot()">Take screenshot</button>
+  <button id="ts" (click)="onTakeScreenshot()">Take screenshot</button>
 </div>
 
 <div class="button-wrapper">
-  <button
-    id = "od-bing"
-    (click)="onBingObjectDetection()">Bing object detection</button>
+  <button id="od-bing" (click)="onBingObjectDetection()">
+    Bing object detection
+  </button>
 </div>
 
 <div class="image-container">
   <img [src]="(vm$ | async)!.objectDetectionImageUrl" alt="" />
-</div>
+</div> -->

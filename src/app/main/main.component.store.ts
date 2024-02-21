@@ -9,7 +9,9 @@ import {
   withLatestFrom,
 } from 'rxjs';
 import { SentinelService } from '../services/sentinel.service';
-import {MapSource, SentinelRequest} from './main.component';
+import { MapSource, SentinelRequest } from './main.component';
+import { StacService } from '../services/stac.service';
+
 export interface STACItemPreview {
   id: string;
   thumbnailUrl: string;
@@ -25,6 +27,8 @@ export interface MainState {
   objectDetectionImageUrl: string | null;
   error: string | null;
   mapSource: string;
+  dataSource: string;
+  detection: string;
 }
 
 export const initialState: MainState = {
@@ -36,12 +40,16 @@ export const initialState: MainState = {
   objectDetectionImageUrl: null,
   error: null,
   mapSource: '',
+  dataSource: '',
+  detection: '',
 };
 
 @Injectable()
 export class MainStore extends ComponentStore<MainState> {
-
-  constructor(private sentinelService: SentinelService) {
+  constructor(
+    private sentinelService: SentinelService,
+    private stacService: StacService
+  ) {
     super(initialState);
   }
 
@@ -51,8 +59,12 @@ export class MainStore extends ComponentStore<MainState> {
   private class$ = this.select((state) => state.class);
   private selectedItem$ = this.select((state) => state.selectedItem);
   private currentExtent$ = this.select((state) => state.currentExtent);
-  private objectDetectionImageUrl$ = this.select((state) => state.objectDetectionImageUrl);
-  private mapSource$ = this.select((state) => state.mapSource)
+  private objectDetectionImageUrl$ = this.select(
+    (state) => state.objectDetectionImageUrl
+  );
+  private mapSource$ = this.select((state) => state.mapSource);
+  private dataSource$ = this.select((state) => state.dataSource);
+  private detection$ = this.select((state) => state.detection);
 
   public vm$ = this.select({
     loading: this.loading$,
@@ -63,6 +75,8 @@ export class MainStore extends ComponentStore<MainState> {
     currentExtent: this.currentExtent$,
     objectDetectionImageUrl: this.objectDetectionImageUrl$,
     mapSource: this.mapSource$,
+    dataSource: this.dataSource$,
+    detection: this.detection$,
   });
 
   private setLoading = this.updater((state, isLoading: boolean) => ({
@@ -98,83 +112,101 @@ export class MainStore extends ComponentStore<MainState> {
     ...state,
     loading: false,
     selectedItem: item,
-  }))
+  }));
 
   private setMapSourceType = this.updater((state, sourceType: string) => ({
     ...state,
     loading: false,
     mapSource: sourceType,
-  }))
+  }));
 
-  readonly mapSource = this.effect(
-    (sourceType$: Observable<MapSource>) => {
-      return sourceType$.pipe(
-        tap((sourceType) => {
-          this.setMapSourceType(sourceType.name)
-        })
-      )
-    }
-  );
+  private setDataSourceType = this.updater((state, dataSourceType: string) => ({
+    ...state,
+    loading: false,
+    dataSource: dataSourceType,
+  }));
 
-  readonly bingObjectDetection = this.effect(
-    (base64: Observable<string>) => {
-      return base64.pipe(
-        tap((s) => console.log(s)),
-        tap(() => this.setLoading(true)),
-        switchMap(base64 => {
-          return this.sentinelService
-            .detectObjectsFromBing(
-              base64
-            )
-            .pipe(
-              tap({
-                next: (image: Blob) => {
-                  const imageUrl = URL.createObjectURL(image);
-                  this.setObjectDetectionImageUrl(imageUrl);
-                  this.setLoading(false);
-                },
-                error: (e) => {
-                  this.setError(e);
-                },
-              }),
-              catchError((e) => {
-                return of(e);
-              })
-            );
-        })
-      );
-    }
-  )
+  private setDetectionType = this.updater((state, detectionType: string) => ({
+    ...state,
+    loading: false,
+    detection: detectionType,
+  }));
+  private setItems = this.updater((state, items: STACItemPreview[]) => ({
+    ...state,
+    loading: false,
+    items: items,
+  }));
 
-  readonly bingTreeDetection = this.effect(
-    (base64: Observable<string>) => {
-      return base64.pipe(
-        tap((s) => console.log(s)),
-        tap(() => this.setLoading(true)),
-        switchMap(base64 => {
-          return this.sentinelService
-            .sendScreenshot(
-              base64
-            )
-            .pipe(
-              tap({
-                next: (image: Blob) => {
-                  const imageUrl = URL.createObjectURL(image);
-                  this.setObjectDetectionImageUrl(imageUrl);
-                  this.setLoading(false);
-                },
-                error: (e) => {
-                  this.setError(e);
-                },
-              }),
-              catchError((e) => {
-                return of(e);
-              })
-            );
-        })
-      );
-    }
-  )
+  readonly mapSource = this.effect((sourceType$: Observable<MapSource>) => {
+    return sourceType$.pipe(
+      tap((sourceType) => {
+        this.setMapSourceType(sourceType.name);
+      })
+    );
+  });
+
+  readonly dataSource = this.effect((sourceType$: Observable<string>) => {
+    return sourceType$.pipe(
+      tap((sourceType) => {
+        this.setDataSourceType(sourceType);
+      })
+    );
+  });
+  readonly detectionType = this.effect((sourceType$: Observable<string>) => {
+    return sourceType$.pipe(
+      tap((sourceType) => {
+        this.setDetectionType(sourceType);
+      })
+    );
+  });
+
+  readonly bingObjectDetection = this.effect((base64: Observable<string>) => {
+    return base64.pipe(
+      tap((s) => console.log(s)),
+      tap(() => this.setLoading(true)),
+      switchMap((base64) => {
+        return this.sentinelService.detectObjectsFromBing(base64).pipe(
+          tap({
+            next: (image: Blob) => {
+              const imageUrl = URL.createObjectURL(image);
+              this.setObjectDetectionImageUrl(imageUrl);
+              this.setLoading(false);
+            },
+            error: (e) => {
+              this.setError(e);
+            },
+          }),
+          catchError((e) => {
+            return of(e);
+          })
+        );
+      })
+    );
+  });
+
+  readonly bingTreeDetection = this.effect((base64: Observable<string>) => {
+    return base64.pipe(
+      tap((s) => console.log(s)),
+      tap(() => this.setLoading(true)),
+      switchMap((base64) => {
+        return this.sentinelService.sendScreenshot(base64).pipe(
+          tap({
+            next: (image: Blob) => {
+              const imageUrl = URL.createObjectURL(image);
+              this.setObjectDetectionImageUrl(imageUrl);
+              this.setLoading(false);
+            },
+            error: (e) => {
+              this.setError(e);
+            },
+          }),
+          catchError((e) => {
+            return of(e);
+          })
+        );
+      })
+    );
+  });
 
   readonly objectDetection = this.effect(
     (sentinelRequest$: Observable<SentinelRequest>) => {
@@ -261,7 +293,23 @@ export class MainStore extends ComponentStore<MainState> {
         tap((sentinelRequest: SentinelRequest) =>
           this.setCurrentExtent(sentinelRequest.extent!)
         ),
-        switchMap((sentinelRequest: SentinelRequest) => {
+        withLatestFrom(this.dataSource$),
+        switchMap(([sentinelRequest, datasource]) => {
+          if (datasource === 'STAC') {
+            console.log('Datasource STAC');
+            return this.stacService.getStacItems(sentinelRequest.extent!).pipe(
+              tap({
+                next: (items: STACItemPreview[]) => {
+                  this.setItems(items);
+                },
+                error: (e) => this.setError(e),
+              }),
+              catchError((e) => {
+                return of(e);
+              })
+            );
+          }
+          console.log('Datasource Sentinel Processing API');
           return this.sentinelService
             .getSentinelGeoTiff(
               sentinelRequest.extent!,
@@ -273,10 +321,103 @@ export class MainStore extends ComponentStore<MainState> {
               tap({
                 next: (image: Blob) => this.setSelectedItem(image),
                 error: (e) => this.setError(e),
+              }),
+              catchError((e) => {
+                return of(e);
               })
             );
         })
       );
     }
   );
+
+  readonly loadImageSTAC = this.effect((itemId$: Observable<string>) => {
+    return itemId$.pipe(
+      tap((itemId) => console.log(`Get image for item with id ${itemId}`)),
+      tap(() => this.setLoading(true)),
+      withLatestFrom(this.currentExtent$, this.detection$),
+      tap(([_, currentExtent, detection]) =>
+        console.log(`... and extent ${currentExtent}`)
+      ),
+      switchMap(
+        ([itemId, currentExtent, detection]: [string, number[], string]) => {
+          console.log(detection);
+          if (detection === 'TreeDetection') {
+            return this.stacService.treeDetection(itemId, currentExtent).pipe(
+              tap({
+                next: (image: Blob) => this.setSelectedItem(image),
+                error: (e) => this.setError(e),
+              }),
+              catchError((e) => {
+                return of(e);
+              })
+            );
+          }
+          return this.stacService.objectDetection(itemId, currentExtent).pipe(
+            tap({
+              next: (image: Blob) => this.setSelectedItem(image),
+              error: (e) => this.setError(e),
+            }),
+            catchError((e) => {
+              return of(e);
+            })
+          );
+        }
+      )
+    );
+  });
+
+  // readonly loadImage = this.effect(
+  //   (sentinelRequest$: Observable<SentinelRequest>) => {
+  //     return sentinelRequest$.pipe(
+  //       tap((sentinelRequest: SentinelRequest) =>
+  //         console.log(
+  //           `Get image for the following request: ${sentinelRequest.extent}, ${sentinelRequest.dateFrom}, ${sentinelRequest.dateTo}, ${sentinelRequest.cloudCoverage}`
+  //         )
+  //       ),
+  //       tap(() => this.setLoading(true)),
+  //       tap((sentinelRequest: SentinelRequest) =>
+  //         this.setCurrentExtent(sentinelRequest.extent!)
+  //       ),
+  //       switchMap((sentinelRequest: SentinelRequest) => {
+  //         return this.sentinelService
+  //           .getSentinelGeoTiff(
+  //             sentinelRequest.extent!,
+  //             sentinelRequest.dateFrom.toString(),
+  //             sentinelRequest.dateTo.toString(),
+  //             sentinelRequest.cloudCoverage
+  //           )
+  //           .pipe(
+  //             tap({
+  //               next: (image: Blob) => this.setSelectedItem(image),
+  //               error: (e) => this.setError(e),
+  //             }),
+  //             catchError((e) => {
+  //               return of(e);
+  //             })
+  //           );
+  //       })
+  //     );
+  //   }
+  // );
+
+  // readonly getItems = this.effect((extent$: Observable<number[]>) => {
+  //   return extent$.pipe(
+  //     tap((extent) =>
+  //       console.log(`Get Items effect triggered for extent ${extent}`)
+  //     ),
+  //     tap(() => this.setLoading(true)),
+  //     tap((extent) => this.setCurrentExtent(extent)),
+  //     switchMap((extent: number[]) => {
+  //       return this.stacService.getStacItems(extent).pipe(
+  //         tap({
+  //           next: (items: STACItemPreview[]) => {
+  //             this.setItems(items);
+  //           },
+  //           error: (e) => this.setError(e),
+  //         })
+  //       );
+  //     })
+  //   );
+  // });
 }
