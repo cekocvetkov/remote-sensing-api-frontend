@@ -50,6 +50,26 @@ export class MapService {
     }
 
     console.log(extent);
+    console.log(this.map.getView().calculateExtent());
+    if (extent.length === 0) {
+      // Means we have BING screenshot simple source
+      extent = this.map.getView().calculateExtent();
+      console.log(extent[0]);
+      extent[0] -= 10;
+      const imageUrl = URL.createObjectURL(image);
+      const source = new Static({
+        url: imageUrl,
+        projection: 'EPSG:3857',
+        imageExtent: extent,
+      });
+      console.log(extent);
+      console.log(source);
+
+      // this.geoTiffLayer.setExtent(extentEPSG3857);
+      this.imageLayer.setExtent(extent);
+      this.imageLayer.setSource(source);
+      return;
+    }
     const extentEPSG3857: number[] = transformExtent(
       extent!,
       'EPSG:4326',

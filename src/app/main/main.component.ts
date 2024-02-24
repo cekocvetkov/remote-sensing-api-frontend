@@ -24,10 +24,18 @@ export interface MapSource {
   providers: [provideComponentStore(MainStore)],
 })
 export class MainComponent implements OnInit {
+  dataSourceOptions = [
+    { value: 'SentinelProcessingApi', label: 'Sentinel Processing API' },
+    { value: 'STAC', label: 'STAC' },
+    { value: 'BING', label: 'Bing Areal Map Screenshot' },
+    // ...
+  ];
+
   @ViewChild('screen', { static: true }) screen: any;
   img = '';
 
   sentinelForm: FormGroup = new FormGroup({});
+  dataSourcesFrom: FormGroup = new FormGroup({});
   vm$ = this.mainStore.vm$;
 
   constructor(
@@ -38,6 +46,10 @@ export class MainComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.dataSourcesFrom = this.formBuilder.group({
+      // ... other form controls
+      selectBox: ['SentinelProcessingApi', Validators.required], // Add the select box control
+    });
     this.sentinelForm = this.formBuilder.group({
       dateFrom: [
         new Date('2023-06-01').toISOString().split('T')[0],
@@ -107,6 +119,7 @@ export class MainComponent implements OnInit {
     });
   }
   onChangeDataSource(dataSourceType: any) {
+    console.log(`Changed datasource to ${dataSourceType.target.value}`);
     this.mainStore.dataSource(dataSourceType.target.value);
   }
   onDetection(detectionType: any) {
@@ -115,12 +128,13 @@ export class MainComponent implements OnInit {
 
   //TODO try dragging https://www.npmjs.com/package/ngx-capture
   onTakeScreenshot() {
+    console.log('TAKE');
     this.captureService
       .getImage(this.document.getElementById('map')!, false, {
-        x: 100,
-        y: 0,
-        width: 600,
-        height: 600,
+        x: 32,
+        y: 30,
+        width: 420,
+        height: 420,
       })
       .pipe(
         tap((img: string) => {

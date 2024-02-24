@@ -36,9 +36,24 @@ export class StacService {
     );
   }
 
-  public treeDetection(id: string, extent: number[]): Observable<Blob> {
+  public treeDetectionYOLO(id: string, extent: number[]): Observable<Blob> {
     return this.http.post(
       'http://localhost:8080/api/v1/remote-sensing/stac/tree-detection',
+      {
+        extent: extent,
+        id: id,
+      },
+      {
+        responseType: 'blob',
+      }
+    );
+  }
+  public treeDetectionDeepforest(
+    id: string,
+    extent: number[]
+  ): Observable<Blob> {
+    return this.http.post(
+      'http://localhost:8080/api/v1/remote-sensing/stac/tree-detection/deepforest',
       {
         extent: extent,
         id: id,

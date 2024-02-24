@@ -148,6 +148,9 @@ export class MainStore extends ComponentStore<MainState> {
   readonly dataSource = this.effect((sourceType$: Observable<string>) => {
     return sourceType$.pipe(
       tap((sourceType) => {
+        if (sourceType === 'BING') {
+          this.setMapSourceType('Aerial');
+        }
         this.setDataSourceType(sourceType);
       })
     );
@@ -192,9 +195,10 @@ export class MainStore extends ComponentStore<MainState> {
         return this.sentinelService.sendScreenshot(base64).pipe(
           tap({
             next: (image: Blob) => {
-              const imageUrl = URL.createObjectURL(image);
-              this.setObjectDetectionImageUrl(imageUrl);
-              this.setLoading(false);
+              this.setSelectedItem(image);
+              // const imageUrl = URL.createObjectURL(image);
+              // this.setObjectDetectionImageUrl(imageUrl);
+              // this.setLoading(false);
             },
             error: (e) => {
               this.setError(e);
@@ -342,16 +346,31 @@ export class MainStore extends ComponentStore<MainState> {
       switchMap(
         ([itemId, currentExtent, detection]: [string, number[], string]) => {
           console.log(detection);
-          if (detection === 'TreeDetection') {
-            return this.stacService.treeDetection(itemId, currentExtent).pipe(
-              tap({
-                next: (image: Blob) => this.setSelectedItem(image),
-                error: (e) => this.setError(e),
-              }),
-              catchError((e) => {
-                return of(e);
-              })
-            );
+          if (detection === 'TreeDetectionYOLO') {
+            return this.stacService
+              .treeDetectionYOLO(itemId, currentExtent)
+              .pipe(
+                tap({
+                  next: (image: Blob) => this.setSelectedItem(image),
+                  error: (e) => this.setError(e),
+                }),
+                catchError((e) => {
+                  return of(e);
+                })
+              );
+          }
+          if (detection === 'TreeDetectionDeepforest') {
+            return this.stacService
+              .treeDetectionDeepforest(itemId, currentExtent)
+              .pipe(
+                tap({
+                  next: (image: Blob) => this.setSelectedItem(image),
+                  error: (e) => this.setError(e),
+                }),
+                catchError((e) => {
+                  return of(e);
+                })
+              );
           }
           return this.stacService.objectDetection(itemId, currentExtent).pipe(
             tap({

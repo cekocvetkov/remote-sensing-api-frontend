@@ -39,3 +39,8 @@ button {
   align-items: flex-start;
   margin-left: 2rem;
 }
+.takeScreenshot img {
+  height: 50px;
+  width: 50px;
+  cursor: pointer;
+}
