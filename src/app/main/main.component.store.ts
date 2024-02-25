@@ -346,9 +346,10 @@ export class MainStore extends ComponentStore<MainState> {
       switchMap(
         ([itemId, currentExtent, detection]: [string, number[], string]) => {
           console.log(detection);
-          if (detection === 'TreeDetectionYOLO') {
+          let model = detection.replace('TreeDetection_', '');
+          if (detection.startsWith('TreeDetection')) {
             return this.stacService
-              .treeDetectionYOLO(itemId, currentExtent)
+              .treeDetection(itemId, currentExtent, model)
               .pipe(
                 tap({
                   next: (image: Blob) => this.setSelectedItem(image),
@@ -359,28 +360,18 @@ export class MainStore extends ComponentStore<MainState> {
                 })
               );
           }
-          if (detection === 'TreeDetectionDeepforest') {
-            return this.stacService
-              .treeDetectionDeepforest(itemId, currentExtent)
-              .pipe(
-                tap({
-                  next: (image: Blob) => this.setSelectedItem(image),
-                  error: (e) => this.setError(e),
-                }),
-                catchError((e) => {
-                  return of(e);
-                })
-              );
-          }
-          return this.stacService.objectDetection(itemId, currentExtent).pipe(
-            tap({
-              next: (image: Blob) => this.setSelectedItem(image),
-              error: (e) => this.setError(e),
-            }),
-            catchError((e) => {
-              return of(e);
-            })
-          );
+          model = detection.replace('ObjectDetection_', '');
+          return this.stacService
+            .objectDetection(itemId, currentExtent, model)
+            .pipe(
+              tap({
+                next: (image: Blob) => this.setSelectedItem(image),
+                error: (e) => this.setError(e),
+              }),
+              catchError((e) => {
+                return of(e);
+              })
+            );
         }
       )
     );

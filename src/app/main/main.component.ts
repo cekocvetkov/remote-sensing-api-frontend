@@ -25,8 +25,8 @@ export interface MapSource {
 })
 export class MainComponent implements OnInit {
   dataSourceOptions = [
-    { value: 'SentinelProcessingApi', label: 'Sentinel Processing API' },
     { value: 'STAC', label: 'STAC' },
+    { value: 'SentinelProcessingApi', label: 'Sentinel Processing API' },
     { value: 'BING', label: 'Bing Areal Map Screenshot' },
     // ...
   ];
@@ -48,7 +48,7 @@ export class MainComponent implements OnInit {
   ngOnInit(): void {
     this.dataSourcesFrom = this.formBuilder.group({
       // ... other form controls
-      selectBox: ['SentinelProcessingApi', Validators.required], // Add the select box control
+      selectBox: ['STAC', Validators.required], // Add the select box control
     });
     this.sentinelForm = this.formBuilder.group({
       dateFrom: [

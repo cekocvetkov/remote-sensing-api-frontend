@@ -23,12 +23,17 @@ export class StacService {
     );
   }
 
-  public objectDetection(id: string, extent: number[]): Observable<Blob> {
+  public objectDetection(
+    id: string,
+    extent: number[],
+    model: string
+  ): Observable<Blob> {
     return this.http.post(
       'http://localhost:8080/api/v1/remote-sensing/stac/object-detection',
       {
         extent: extent,
         id: id,
+        model: model,
       },
       {
         responseType: 'blob',
@@ -36,12 +41,17 @@ export class StacService {
     );
   }
 
-  public treeDetectionYOLO(id: string, extent: number[]): Observable<Blob> {
+  public treeDetection(
+    id: string,
+    extent: number[],
+    model: string
+  ): Observable<Blob> {
     return this.http.post(
       'http://localhost:8080/api/v1/remote-sensing/stac/tree-detection',
       {
         extent: extent,
         id: id,
+        model: model,
       },
       {
         responseType: 'blob',

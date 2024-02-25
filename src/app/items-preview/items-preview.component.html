@@ -1,7 +1,13 @@
 <div class="quicklook-wrapper">
   <div *ngFor="let item of items">
     <div (click)="onTriggerLoadImage(item.id)" class="quicklook-product">
-      <img [src]="item.thumbnailUrl" />
+      <img
+        [src]="
+          item.thumbnailUrl
+            ? item.thumbnailUrl
+            : 'assets/icons8-no-image-50.png'
+        "
+      />
       <div>Item Id: {{ item.id }}</div>
     </div>
   </div>
