@@ -21,15 +21,14 @@ export class MapComponent implements OnChanges {
   @Output() drawEnd$ = this.mapService.drawEnd$;
 
   constructor(private mapService: MapService) {}
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['mapSource']) {
-      this.mapService.setMapSource(this.mapSource);
+      this.mapService.changeMapSource(this.mapSource);
     }
     if (changes['loadedImage']) {
       console.log(this.currentExtent);
       this.mapService.setSource(this.loadedImage, this.currentExtent);
     }
   }
-
-  ngOnInit(): void {}
 }

@@ -24,12 +24,6 @@ export interface MapSource {
   providers: [provideComponentStore(MainStore)],
 })
 export class MainComponent implements OnInit {
-  dataSourceOptions = [
-    { value: 'STAC', label: 'STAC' },
-    { value: 'SentinelProcessingApi', label: 'Sentinel Processing API' },
-    { value: 'BING', label: 'Bing Areal Map Screenshot' },
-    // ...
-  ];
 
   @ViewChild('screen', { static: true }) screen: any;
   img = '';
@@ -97,14 +91,6 @@ export class MainComponent implements OnInit {
     return this.sentinelForm.get('cloudCoverage')?.value;
   }
 
-  onClassify() {
-    this.mainStore.classify({
-      dateFrom: this.dateFrom,
-      dateTo: this.dateTo,
-      cloudCoverage: this.cloudCoverage,
-    });
-  }
-
   onObjectDetection() {
     this.mainStore.objectDetection({
       dateFrom: this.dateFrom,
@@ -118,23 +104,24 @@ export class MainComponent implements OnInit {
       name: mapSource.target.value,
     });
   }
-  onChangeDataSource(dataSourceType: any) {
-    console.log(`Changed datasource to ${dataSourceType.target.value}`);
+
+  onChangeDataProvider(dataSourceType: any) {
+    console.log(`Changed data provider to ${dataSourceType.target.value}`);
     this.mainStore.dataSource(dataSourceType.target.value);
   }
+
   onDetection(detectionType: any) {
     this.mainStore.detectionType(detectionType.target.value);
   }
 
-  //TODO try dragging https://www.npmjs.com/package/ngx-capture
   onTakeScreenshot() {
     console.log('TAKE');
     this.captureService
       .getImage(this.document.getElementById('map')!, false, {
-        x: 32,
-        y: 30,
-        width: 420,
-        height: 420,
+        x: 0,
+        y: 0,
+        width: 500,
+        height: 500,
       })
       .pipe(
         tap((img: string) => {
@@ -155,17 +142,8 @@ export class MainComponent implements OnInit {
       });
   }
 
-  onDownloadScreenShot() {
-    this.captureService
-      .getImage(this.document.getElementById('map')!, true)
-      .subscribe((img) => {
-        this.captureService.downloadImage(img);
-      });
-  }
   loadImageSTAC(itemId: any) {
     this.mainStore.loadImageSTAC(itemId);
   }
-  onLoadImage(itemId: any) {
-    this.mainStore.loadImage(itemId);
-  }
+
 }

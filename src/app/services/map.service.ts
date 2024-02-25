@@ -1,12 +1,6 @@
 import { Injectable } from '@angular/core';
 import { View, Feature } from 'ol';
-import {
-  Extent,
-  getTopLeft,
-  getTopRight,
-  getBottomRight,
-  getBottomLeft,
-} from 'ol/extent';
+import { Extent } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
 import BingMaps from 'ol/source/BingMaps.js';
 
@@ -14,35 +8,45 @@ import { Geometry } from 'ol/geom';
 import Draw, { DrawEvent, createRegularPolygon } from 'ol/interaction/Draw';
 import VectorLayer from 'ol/layer/Vector';
 import { transformExtent } from 'ol/proj';
-import { GeoTIFF, OSM } from 'ol/source';
+import { OSM } from 'ol/source';
 import VectorSource from 'ol/source/Vector';
 import { Subject } from 'rxjs';
 import Map from 'ol/Map';
 import TileLayer from 'ol/layer/WebGLTile.js';
 import Static from 'ol/source/ImageStatic';
 import ImageLayer from 'ol/layer/Image.js';
+import { defaults as defaultInteractions } from 'ol/interaction/defaults';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MapService {
+
   private drawEnd$$ = new Subject<number[]>();
+
   private map: Map;
+
   private bing = new TileLayer({
     source: new BingMaps({
       key: 'Aka7WBWlT_uiKpqkCaYfCD97redC9OP0miLCvbYige0eH41SNyBiz2KgMDPAlqUE',
       imagerySet: 'Aerial',
     }),
   });
+
   private osm = new TileLayer({
     source: new OSM(),
   });
+
   geoTiffLayer: TileLayer = new TileLayer({});
+
   imageLayer: ImageLayer<Static> = new ImageLayer({});
+
   public drawEnd$ = this.drawEnd$$.asObservable();
+
   constructor() {
     this.map = this.createMap('map');
   }
+
   public setSource(image: Blob | null, extent: number[]) {
     console.log(`Set Source ${image} ${extent}`);
     if (image === null) {
@@ -84,35 +88,11 @@ export class MapService {
     console.log(extentEPSG3857);
     console.log(source);
 
-    // this.geoTiffLayer.setExtent(extentEPSG3857);
     this.imageLayer.setExtent(extentEPSG3857);
     this.imageLayer.setSource(source);
   }
-  // public setSource(image: Blob | null, extent: number[]) {
-  //   console.log(`Set Source ${image} ${extent}`);
-  //   if (image === null) {
-  //     return;
-  //   }
-  //   const source = new GeoTIFF({
-  //     sources: [
-  //       {
-  //         blob: image,
-  //       },
-  //     ],
-  //   });
-  //   console.log(source);
-  //   console.log(extent);
-  //   const extentEPSG3857: number[] = transformExtent(
-  //     extent!,
-  //     'EPSG:4326',
-  //     'EPSG:3857'
-  //   );
-  //   console.log(extentEPSG3857);
-  //   this.geoTiffLayer.setExtent(extentEPSG3857);
-  //   this.geoTiffLayer.setSource(source);
-  // }
 
-  public setMapSource(mapSource: string) {
+  public changeMapSource(mapSource: string) {
     const vectorLayer = new VectorLayer({
       source: new VectorSource({ wrapX: false }),
     });
@@ -122,7 +102,18 @@ export class MapService {
       this.imageLayer,
       vectorLayer,
     ];
+
     this.map.setLayers(layers);
+    const drawInteraction = this.createBBoxDrawInteraction(
+      vectorLayer.getSource()!
+    );
+    if (mapSource === 'Aerial') {
+      const interactions = defaultInteractions();
+      this.map.getInteractions().clear();
+      interactions.forEach(interaction => this.map.addInteraction(interaction));
+    } else {
+      this.map.addInteraction(drawInteraction);
+    }
     this.map.render();
   }
 
@@ -159,7 +150,7 @@ export class MapService {
       ],
     });
     map.addInteraction(drawInteraction);
-
+    map.getControls().clear();
     setTimeout(() => {
       map.setTarget(targetElementId);
     }, 0);
@@ -180,12 +171,6 @@ export class MapService {
       'EPSG:4326'
     );
 
-    const extentCoords = [
-      getTopLeft(extentEPSG4326),
-      getTopRight(extentEPSG4326),
-      getBottomRight(extentEPSG4326),
-      getBottomLeft(extentEPSG4326),
-    ];
     this.drawEnd$$.next(extentEPSG4326);
   }
 

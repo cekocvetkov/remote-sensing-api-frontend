@@ -196,9 +196,6 @@ export class MainStore extends ComponentStore<MainState> {
           tap({
             next: (image: Blob) => {
               this.setSelectedItem(image);
-              // const imageUrl = URL.createObjectURL(image);
-              // this.setObjectDetectionImageUrl(imageUrl);
-              // this.setLoading(false);
             },
             error: (e) => {
               this.setError(e);
@@ -245,39 +242,6 @@ export class MainStore extends ComponentStore<MainState> {
               }),
               catchError((e) => {
                 return of(e);
-              })
-            );
-        })
-      );
-    }
-  );
-
-  readonly classify = this.effect(
-    (sentinelRequest$: Observable<SentinelRequest>) => {
-      return sentinelRequest$.pipe(
-        withLatestFrom(this.currentExtent$),
-        tap(([sentinelRequest, currentExtent]) =>
-          console.log(
-            `Classifying image for current extent: ${currentExtent}, ${sentinelRequest.dateFrom}, ${sentinelRequest.dateTo}, ${sentinelRequest.cloudCoverage}`
-          )
-        ),
-        tap(() => this.setLoading(true)),
-        switchMap(([sentinelRequest, currentExtent]) => {
-          return this.sentinelService
-            .classifyGeoTiff(
-              currentExtent,
-              sentinelRequest.dateFrom.toString(),
-              sentinelRequest.dateTo.toString(),
-              sentinelRequest.cloudCoverage
-            )
-            .pipe(
-              tap({
-                next: (s) => {
-                  console.log(`Image classified as ${s}`);
-                  this.setLoading(false);
-                  this.setClass(s);
-                },
-                error: (e) => this.setError(e),
               })
             );
         })

@@ -7,10 +7,12 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
 import { MapComponent } from './map/map.component';
-import { HttpClientModule } from '@angular/common/http';
+import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import { ImageCropperModule } from 'ngx-image-cropper';
 import { NgxCaptureModule } from 'ngx-capture';
 import { ItemsPreviewComponent } from './items-preview/items-preview.component';
+import { ErrorInterceptor } from './services/error-interceptor';
+import {ErrorBanner} from "./error-banner/error-banner";
 
 @NgModule({
   declarations: [
@@ -18,6 +20,7 @@ import { ItemsPreviewComponent } from './items-preview/items-preview.component';
     MainComponent,
     MapComponent,
     ItemsPreviewComponent,
+    ErrorBanner
   ],
   imports: [
     HttpClientModule,
@@ -29,7 +32,9 @@ import { ItemsPreviewComponent } from './items-preview/items-preview.component';
     NgxCaptureModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

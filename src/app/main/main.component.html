@@ -14,19 +14,16 @@
   <img src="assets/icons8-camera-50.png" alt="" />
 </div>
 <div class="controls">
-  <div class="button-wrapper">
-    <label>Data source options:</label>
-    <select (change)="onChangeDataSource($event)">
+  <div class="button-wrapper" *ngIf="(vm$ | async)!.mapSource === 'OSM'">
+    <label>Data provider:</label>
+    <select (change)="onChangeDataProvider($event)">
       <option value="STAC">STAC</option>
       <option value="SentinelProcessingApi">Sentinel Processing API</option>
-      <option value="BING">Bing Areal Map Screenshot</option>
     </select>
   </div>
 
-  <!-- <div id="map" class="map" (click)="logCoordinates($event)"></div>
-<div *ngIf="loading" class="loading">LOADING...</div> -->
   <div class="button-wrapper">
-    <label>Map source options:</label>
+    <label>Map source:</label>
     <select (change)="onChangeMapSource($event)">
       <option value="OSM">Open Street map</option>
       <option value="Aerial">Bing Aerial Map</option>
@@ -126,41 +123,4 @@
     [items]="(vm$ | async)!.items"
     (loadImage)="loadImageSTAC($event)"
   ></app-items-preview>
-
-  <!-- <div class="button-wrapper">
-  <button
-    id="class"
-    *ngIf="(vm$ | async)!.currentExtent.length > 0"
-    (click)="onClassify()"
-  >
-    Classify current image
-  </button>
-  <div class="class">
-    The last image was classified as: {{ (vm$ | async)!.class }}
-  </div>
-</div>
-
-<div class="button-wrapper">
-  <button
-    id="od"
-    *ngIf="(vm$ | async)!.currentExtent.length > 0"
-    (click)="onObjectDetection()"
-  >
-    Object Detection
-  </button>
-</div>
-
-<div class="button-wrapper">
-  <button id="ts" (click)="onTakeScreenshot()">Take screenshot</button>
-</div>
-
-<div class="button-wrapper">
-  <button id="od-bing" (click)="onBingObjectDetection()">
-    Bing object detection
-  </button>
-</div>
-
-<div class="image-container">
-  <img [src]="(vm$ | async)!.objectDetectionImageUrl" alt="" />
-</div> -->
 </div>
