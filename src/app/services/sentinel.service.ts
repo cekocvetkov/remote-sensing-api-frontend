@@ -30,28 +30,6 @@ export class SentinelService {
     );
   }
 
-  classifyGeoTiff(
-    extent: number[],
-    dateFrom: string,
-    dateTo: string,
-    cloudCoverage: number
-  ): Observable<string> {
-    console.log('Classifying GeoTiff... ');
-    console.log(dateFrom);
-    console.log(dateTo);
-    console.log(cloudCoverage);
-    return this.http.post(
-      `http://localhost:8080/api/v1/sentinel/classify`,
-      {
-        extent: extent,
-        dateFrom: dateFrom,
-        dateTo: dateTo,
-        cloudCoverage: cloudCoverage,
-      },
-      { responseType: 'text' }
-    );
-  }
-
   objectDetection(
     extent: number[],
     dateFrom: string,
@@ -74,22 +52,15 @@ export class SentinelService {
     );
   }
 
-  detectObjectsFromBing(img: string): Observable<Blob> {
-    const formData = this.constructFormData(img);
-
-    return this.http.post(`http://localhost:8080/api/v1/sentinel/od/bing`, formData, {responseType: 'blob'});
+  bingObjectDetection(img: string, model: string): Observable<Blob> {
+    const formData = this.constructFormData(img, model);
+    return this.http.post(`http://localhost:8080/api/v1/sentinel/bing/detection`, formData, {responseType: 'blob'});
   }
 
-  sendScreenshot(img: string): Observable<Blob> {
-    const formData = this.constructFormData(img);
-
-    return this.http.post(`http://localhost:8080/api/v1/sentinel/td`, formData, {responseType: 'blob'});
-  }
-
-  private constructFormData(img: string) {
-    img = img.replace('data:image/png;base64,', '');
+  private constructFormData(base64Img: string, model: string) {
+    base64Img = base64Img.replace('data:image/png;base64,', '');
     // Decode base64 string to Blob
-    const byteCharacters = atob(img);
+    const byteCharacters = atob(base64Img);
     const byteNumbers = new Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -102,6 +73,7 @@ export class SentinelService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('fileName', 'image.png');
+    formData.append('model', model)
     return formData;
   }
 }

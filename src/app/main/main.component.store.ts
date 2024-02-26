@@ -167,35 +167,14 @@ export class MainStore extends ComponentStore<MainState> {
     return base64.pipe(
       tap((s) => console.log(s)),
       tap(() => this.setLoading(true)),
-      switchMap((base64) => {
-        return this.sentinelService.detectObjectsFromBing(base64).pipe(
+      withLatestFrom(this.detection$),
+      switchMap(([base64, model]: [string, string]) => {
+        return this.sentinelService.bingObjectDetection(base64, model).pipe(
           tap({
             next: (image: Blob) => {
               const imageUrl = URL.createObjectURL(image);
               this.setObjectDetectionImageUrl(imageUrl);
               this.setLoading(false);
-            },
-            error: (e) => {
-              this.setError(e);
-            },
-          }),
-          catchError((e) => {
-            return of(e);
-          })
-        );
-      })
-    );
-  });
-
-  readonly bingTreeDetection = this.effect((base64: Observable<string>) => {
-    return base64.pipe(
-      tap((s) => console.log(s)),
-      tap(() => this.setLoading(true)),
-      switchMap((base64) => {
-        return this.sentinelService.sendScreenshot(base64).pipe(
-          tap({
-            next: (image: Blob) => {
-              this.setSelectedItem(image);
             },
             error: (e) => {
               this.setError(e);
