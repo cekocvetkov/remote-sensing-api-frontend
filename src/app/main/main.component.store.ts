@@ -155,6 +155,7 @@ export class MainStore extends ComponentStore<MainState> {
       })
     );
   });
+
   readonly detectionType = this.effect((sourceType$: Observable<string>) => {
     return sourceType$.pipe(
       tap((sourceType) => {
@@ -187,46 +188,6 @@ export class MainStore extends ComponentStore<MainState> {
       })
     );
   });
-
-  readonly objectDetection = this.effect(
-    (sentinelRequest$: Observable<SentinelRequest>) => {
-      console.log(sentinelRequest$);
-      return sentinelRequest$.pipe(
-        tap((s) => console.log(s)),
-        withLatestFrom(this.currentExtent$),
-        tap(([sentinelRequest, currentExtent]) =>
-          console.log(
-            `Object detection for current extent: ${currentExtent}, ${sentinelRequest.dateFrom}, ${sentinelRequest.dateTo}, ${sentinelRequest.cloudCoverage}`
-          )
-        ),
-        tap(() => this.setLoading(true)),
-        switchMap(([sentinelRequest, currentExtent]) => {
-          return this.sentinelService
-            .objectDetection(
-              currentExtent,
-              sentinelRequest.dateFrom.toString(),
-              sentinelRequest.dateTo.toString(),
-              sentinelRequest.cloudCoverage
-            )
-            .pipe(
-              tap({
-                next: (image: Blob) => {
-                  const imageUrl = URL.createObjectURL(image);
-                  this.setObjectDetectionImageUrl(imageUrl);
-                  this.setLoading(false);
-                },
-                error: (e) => {
-                  this.setError(e);
-                },
-              }),
-              catchError((e) => {
-                return of(e);
-              })
-            );
-        })
-      );
-    }
-  );
 
   readonly loadImage = this.effect(
     (sentinelRequest$: Observable<SentinelRequest>) => {
@@ -286,24 +247,7 @@ export class MainStore extends ComponentStore<MainState> {
       tap(([_, currentExtent, detection]) =>
         console.log(`... and extent ${currentExtent}`)
       ),
-      switchMap(
-        ([itemId, currentExtent, detection]: [string, number[], string]) => {
-          console.log(detection);
-          let model = detection.replace('TreeDetection_', '');
-          if (detection.startsWith('TreeDetection')) {
-            return this.stacService
-              .treeDetection(itemId, currentExtent, model)
-              .pipe(
-                tap({
-                  next: (image: Blob) => this.setSelectedItem(image),
-                  error: (e) => this.setError(e),
-                }),
-                catchError((e) => {
-                  return of(e);
-                })
-              );
-          }
-          model = detection.replace('ObjectDetection_', '');
+      switchMap(([itemId, currentExtent, model]: [string, number[], string]) => {
           return this.stacService
             .objectDetection(itemId, currentExtent, model)
             .pipe(
@@ -319,58 +263,4 @@ export class MainStore extends ComponentStore<MainState> {
       )
     );
   });
-
-  // readonly loadImage = this.effect(
-  //   (sentinelRequest$: Observable<SentinelRequest>) => {
-  //     return sentinelRequest$.pipe(
-  //       tap((sentinelRequest: SentinelRequest) =>
-  //         console.log(
-  //           `Get image for the following request: ${sentinelRequest.extent}, ${sentinelRequest.dateFrom}, ${sentinelRequest.dateTo}, ${sentinelRequest.cloudCoverage}`
-  //         )
-  //       ),
-  //       tap(() => this.setLoading(true)),
-  //       tap((sentinelRequest: SentinelRequest) =>
-  //         this.setCurrentExtent(sentinelRequest.extent!)
-  //       ),
-  //       switchMap((sentinelRequest: SentinelRequest) => {
-  //         return this.sentinelService
-  //           .getSentinelGeoTiff(
-  //             sentinelRequest.extent!,
-  //             sentinelRequest.dateFrom.toString(),
-  //             sentinelRequest.dateTo.toString(),
-  //             sentinelRequest.cloudCoverage
-  //           )
-  //           .pipe(
-  //             tap({
-  //               next: (image: Blob) => this.setSelectedItem(image),
-  //               error: (e) => this.setError(e),
-  //             }),
-  //             catchError((e) => {
-  //               return of(e);
-  //             })
-  //           );
-  //       })
-  //     );
-  //   }
-  // );
-
-  // readonly getItems = this.effect((extent$: Observable<number[]>) => {
-  //   return extent$.pipe(
-  //     tap((extent) =>
-  //       console.log(`Get Items effect triggered for extent ${extent}`)
-  //     ),
-  //     tap(() => this.setLoading(true)),
-  //     tap((extent) => this.setCurrentExtent(extent)),
-  //     switchMap((extent: number[]) => {
-  //       return this.stacService.getStacItems(extent).pipe(
-  //         tap({
-  //           next: (items: STACItemPreview[]) => {
-  //             this.setItems(items);
-  //           },
-  //           error: (e) => this.setError(e),
-  //         })
-  //       );
-  //     })
-  //   );
-  // });
 }

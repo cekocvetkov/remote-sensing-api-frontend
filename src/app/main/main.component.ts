@@ -91,14 +91,6 @@ export class MainComponent implements OnInit {
     return this.sentinelForm.get('cloudCoverage')?.value;
   }
 
-  onObjectDetection() {
-    this.mainStore.objectDetection({
-      dateFrom: this.dateFrom,
-      dateTo: this.dateTo,
-      cloudCoverage: this.cloudCoverage,
-    });
-  }
-
   onChangeMapSource(mapSource: any) {
     this.mainStore.mapSource({
       name: mapSource.target.value,
