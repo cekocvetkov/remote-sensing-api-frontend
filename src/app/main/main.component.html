@@ -6,13 +6,7 @@
   (drawEnd$)="onDrawEnd($event)"
 >
 </app-map>
-<div
-  *ngIf="(vm$ | async)!.mapSource === 'Aerial'"
-  class="takeScreenshot"
-  (click)="onTakeScreenshot()"
->
-  <img src="assets/icons8-camera-50.png" alt="" />
-</div>
+
 <div class="controls">
   <div class="button-wrapper" *ngIf="(vm$ | async)!.mapSource === 'OSM'">
     <label>Data provider:</label>
@@ -43,34 +37,22 @@
       <option value="ceadar__yolov8__50epoch__tree-detection">
         ceadar__yolov8__50epoch__tree-detection
       </option>
-      <option
-        value="jdrzej-szpygiel__yolov8__10epoch__tree-detection"
-      >
+      <option value="jdrzej-szpygiel__yolov8__10epoch__tree-detection">
         jdrzej-szpygiel__yolov8__10epoch__tree-detection
       </option>
-      <option
-        value="jdrzej-szpygiel__yolov8__20epoch__tree-detection"
-      >
+      <option value="jdrzej-szpygiel__yolov8__20epoch__tree-detection">
         jdrzej-szpygiel__yolov8__20epoch__tree-detection
       </option>
-      <option
-        value="jdrzej-szpygiel__yolov8__50epoch__tree-detection"
-      >
+      <option value="jdrzej-szpygiel__yolov8__50epoch__tree-detection">
         jdrzej-szpygiel__yolov8__50epoch__tree-detection
       </option>
-      <option
-        value="project-5jlv8__yolov8__10epoch__object-detection"
-      >
+      <option value="project-5jlv8__yolov8__10epoch__object-detection">
         project-5jlv8__yolov8__10epoch__object-detection
       </option>
-      <option
-        value="project-5jlv8__yolov8__20epoch__object-detection"
-      >
+      <option value="project-5jlv8__yolov8__20epoch__object-detection">
         project-5jlv8__yolov8__20epoch__object-detection
       </option>
-      <option
-        value="project-5jlv8__yolov8__50epoch__object-detection"
-      >
+      <option value="project-5jlv8__yolov8__50epoch__object-detection">
         project-5jlv8__yolov8__50epoch__object-detection
       </option>
       <option
@@ -91,6 +73,12 @@
       <option value="TreeDetectionDeepforest">Tree Detection Deepforest</option>
     </select>
   </div>
+  <button
+    *ngIf="(vm$ | async)!.mapSource === 'Aerial'"
+    (click)="onTakeScreenshot()"
+  >
+    Detect
+  </button>
 
   <div>
     <form

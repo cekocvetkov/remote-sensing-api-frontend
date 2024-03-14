@@ -12,7 +12,8 @@ export class SentinelService {
     extent: number[],
     dateFrom: string,
     dateTo: string,
-    cloudCoverage: number
+    cloudCoverage: number,
+    model: string
   ): Observable<Blob> {
     console.log('Getting sentinel tiff from processing api with ');
     console.log(dateFrom);
@@ -25,6 +26,7 @@ export class SentinelService {
         dateFrom: dateFrom,
         dateTo: dateTo,
         cloudCoverage: cloudCoverage,
+        model: model,
       },
       { responseType: 'blob' }
     );
@@ -53,8 +55,14 @@ export class SentinelService {
   }
 
   bingObjectDetection(img: string, model: string): Observable<Blob> {
+    console.log(model);
     const formData = this.constructFormData(img, model);
-    return this.http.post(`http://localhost:8080/api/v1/sentinel/bing/detection`, formData, {responseType: 'blob'});
+    console.log(formData);
+    return this.http.post(
+      `http://localhost:8080/api/v1/sentinel/bing/detection`,
+      formData,
+      { responseType: 'blob' }
+    );
   }
 
   private constructFormData(base64Img: string, model: string) {
@@ -66,14 +74,14 @@ export class SentinelService {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: 'image/png'});
+    const blob = new Blob([byteArray], { type: 'image/png' });
 
     // Create FormData and append the image
     const file = new File([blob], 'image.png');
     const formData = new FormData();
     formData.append('file', file);
     formData.append('fileName', 'image.png');
-    formData.append('model', model)
+    formData.append('model', model);
     return formData;
   }
 }

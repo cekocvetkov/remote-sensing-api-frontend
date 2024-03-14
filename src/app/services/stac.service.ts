@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 export interface STACItemPreview {
   id: string;
   thumbnailUrl: string;
+  collection: string;
   downloadUrl: string;
 }
 

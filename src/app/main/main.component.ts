@@ -24,7 +24,6 @@ export interface MapSource {
   providers: [provideComponentStore(MainStore)],
 })
 export class MainComponent implements OnInit {
-
   @ViewChild('screen', { static: true }) screen: any;
   img = '';
 
@@ -40,6 +39,11 @@ export class MainComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.mainStore.dataSource('STAC');
+    this.mainStore.detectionType('yolov8dior__object-detection');
+    this.mainStore.mapSource({
+      name: 'OSM',
+    });
     this.dataSourcesFrom = this.formBuilder.group({
       // ... other form controls
       selectBox: ['STAC', Validators.required], // Add the select box control
@@ -107,7 +111,6 @@ export class MainComponent implements OnInit {
   }
 
   onTakeScreenshot() {
-    console.log('TAKE');
     this.captureService
       .getImage(this.document.getElementById('map')!, false, {
         x: 0,
@@ -118,7 +121,6 @@ export class MainComponent implements OnInit {
       .pipe(
         tap((img: string) => {
           this.img = img;
-          console.log(img);
         })
       )
       .subscribe((img) => {
@@ -129,5 +131,4 @@ export class MainComponent implements OnInit {
   loadImageSTAC(itemId: any) {
     this.mainStore.loadImageSTAC(itemId);
   }
-
 }

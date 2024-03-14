@@ -15,6 +15,7 @@ import { StacService } from '../services/stac.service';
 export interface STACItemPreview {
   id: string;
   thumbnailUrl: string;
+  collection: string;
   downloadUrl: string;
 }
 
@@ -166,16 +167,17 @@ export class MainStore extends ComponentStore<MainState> {
 
   readonly bingObjectDetection = this.effect((base64: Observable<string>) => {
     return base64.pipe(
-      tap((s) => console.log(s)),
+      // tap((s) => console.log(s)),
       tap(() => this.setLoading(true)),
       withLatestFrom(this.detection$),
       switchMap(([base64, model]: [string, string]) => {
         return this.sentinelService.bingObjectDetection(base64, model).pipe(
           tap({
             next: (image: Blob) => {
-              const imageUrl = URL.createObjectURL(image);
-              this.setObjectDetectionImageUrl(imageUrl);
-              this.setLoading(false);
+              this.setSelectedItem(image);
+              // const imageUrl = URL.createObjectURL(image);
+              // this.setObjectDetectionImageUrl(imageUrl);
+              // this.setLoading(false);
             },
             error: (e) => {
               this.setError(e);
@@ -201,8 +203,8 @@ export class MainStore extends ComponentStore<MainState> {
         tap((sentinelRequest: SentinelRequest) =>
           this.setCurrentExtent(sentinelRequest.extent!)
         ),
-        withLatestFrom(this.dataSource$),
-        switchMap(([sentinelRequest, datasource]) => {
+        withLatestFrom(this.dataSource$, this.detection$),
+        switchMap(([sentinelRequest, datasource, detectionModel]) => {
           if (datasource === 'STAC') {
             console.log('Datasource STAC');
             return this.stacService.getStacItems(sentinelRequest.extent!).pipe(
@@ -223,7 +225,8 @@ export class MainStore extends ComponentStore<MainState> {
               sentinelRequest.extent!,
               sentinelRequest.dateFrom.toString(),
               sentinelRequest.dateTo.toString(),
-              sentinelRequest.cloudCoverage
+              sentinelRequest.cloudCoverage,
+              detectionModel
             )
             .pipe(
               tap({
@@ -247,7 +250,8 @@ export class MainStore extends ComponentStore<MainState> {
       tap(([_, currentExtent, detection]) =>
         console.log(`... and extent ${currentExtent}`)
       ),
-      switchMap(([itemId, currentExtent, model]: [string, number[], string]) => {
+      switchMap(
+        ([itemId, currentExtent, model]: [string, number[], string]) => {
           return this.stacService
             .objectDetection(itemId, currentExtent, model)
             .pipe(

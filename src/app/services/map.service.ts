@@ -16,12 +16,14 @@ import TileLayer from 'ol/layer/WebGLTile.js';
 import Static from 'ol/source/ImageStatic';
 import ImageLayer from 'ol/layer/Image.js';
 import { defaults as defaultInteractions } from 'ol/interaction/defaults';
+import Fill from 'ol/style/Fill';
+import Style from 'ol/style/Style';
+import Stroke from 'ol/style/Stroke';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MapService {
-
   private drawEnd$$ = new Subject<number[]>();
 
   private map: Map;
@@ -32,7 +34,11 @@ export class MapService {
       imagerySet: 'Aerial',
     }),
   });
-
+  private vectorStyle = new Style({
+    fill: new Fill({
+      color: 'rgba(0, 0, 0, 0)', // Transparent fill
+    }),
+  });
   private osm = new TileLayer({
     source: new OSM(),
   });
@@ -110,7 +116,9 @@ export class MapService {
     if (mapSource === 'Aerial') {
       const interactions = defaultInteractions();
       this.map.getInteractions().clear();
-      interactions.forEach(interaction => this.map.addInteraction(interaction));
+      interactions.forEach((interaction) =>
+        this.map.addInteraction(interaction)
+      );
     } else {
       this.map.addInteraction(drawInteraction);
     }
@@ -130,6 +138,7 @@ export class MapService {
 
     const vectorLayer = new VectorLayer({
       source: new VectorSource({ wrapX: false }),
+      style: this.vectorStyle,
     });
     const drawInteraction = this.createBBoxDrawInteraction(
       vectorLayer.getSource()!
@@ -160,6 +169,8 @@ export class MapService {
 
   private onDrawEnd(e: DrawEvent): void {
     const feature: Feature<Geometry> = e.feature;
+
+    feature.setStyle(this.vectorStyle);
 
     var writer = new GeoJSON();
     writer.writeGeometry(feature.getGeometry()!);
