@@ -171,7 +171,7 @@ export class MainStore extends ComponentStore<MainState> {
       tap(() => this.setLoading(true)),
       withLatestFrom(this.detection$),
       switchMap(([base64, model]: [string, string]) => {
-        return this.sentinelService.bingObjectDetection(base64, model).pipe(
+        return this.stacService.bingObjectDetection(base64, model).pipe(
           tap({
             next: (image: Blob) => {
               this.setSelectedItem(image);
