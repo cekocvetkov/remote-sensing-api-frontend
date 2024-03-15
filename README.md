@@ -1,4 +1,4 @@
-# Sentinel processing api UI
+# Remote Sensing UI for object and tree detection
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.0.3.
 
