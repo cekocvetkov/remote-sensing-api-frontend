@@ -207,7 +207,13 @@ export class MainStore extends ComponentStore<MainState> {
         switchMap(([sentinelRequest, datasource, detectionModel]) => {
           if (datasource === 'STAC') {
             console.log('Datasource STAC');
-            return this.stacService.getStacItems(sentinelRequest.extent!).pipe(
+            return this.stacService.getStacItems(
+              sentinelRequest.extent!,
+              sentinelRequest.dateFrom.toString(),
+              sentinelRequest.dateTo.toString(),
+              sentinelRequest.cloudCoverage
+            )
+            .pipe(
               tap({
                 next: (items: STACItemPreview[]) => {
                   this.setItems(items);

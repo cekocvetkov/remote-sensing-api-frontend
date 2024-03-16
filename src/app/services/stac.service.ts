@@ -15,11 +15,18 @@ export interface STACItemPreview {
 export class StacService {
   constructor(private http: HttpClient) {}
 
-  public getStacItems(extent: number[]): Observable<STACItemPreview[]> {
+  public getStacItems(extent: number[],
+                      dateFrom: string,
+                      dateTo: string,
+                      cloudCoverage: number
+  ): Observable<STACItemPreview[]> {
     return this.http.post<STACItemPreview[]>(
       'http://localhost:8080/api/v1/remote-sensing/stac/items',
       {
         extent: extent,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        cloudCoverage: cloudCoverage
       }
     );
   }
@@ -42,21 +49,6 @@ export class StacService {
     );
   }
 
-  public treeDetectionDeepforest(
-    id: string,
-    extent: number[]
-  ): Observable<Blob> {
-    return this.http.post(
-      'http://localhost:8080/api/v1/remote-sensing/stac/tree-detection/deepforest',
-      {
-        extent: extent,
-        id: id,
-      },
-      {
-        responseType: 'blob',
-      }
-    );
-  }
   bingObjectDetection(img: string, model: string): Observable<Blob> {
     console.log(model);
     const formData = this.constructFormData(img, model);

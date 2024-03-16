@@ -18,7 +18,6 @@ import ImageLayer from 'ol/layer/Image.js';
 import { defaults as defaultInteractions } from 'ol/interaction/defaults';
 import Fill from 'ol/style/Fill';
 import Style from 'ol/style/Style';
-import Stroke from 'ol/style/Stroke';
 
 @Injectable({
   providedIn: 'root',
@@ -75,7 +74,6 @@ export class MapService {
       console.log(extent);
       console.log(source);
 
-      // this.geoTiffLayer.setExtent(extentEPSG3857);
       this.imageLayer.setExtent(extent);
       this.imageLayer.setSource(source);
       return;
